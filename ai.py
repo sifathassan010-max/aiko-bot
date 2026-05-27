@@ -1,0 +1,40 @@
+import google.generativeai as genai
+from config import GEMINI_KEY, MAX_HISTORY
+from db import get_history
+
+genai.configure(api_key=GEMINI_KEY)
+
+model = genai.GenerativeModel("gemini-1.5-flash")
+
+def load_character():
+    with open("prompts/character.txt", "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def build_prompt(user_id, user_message):
+    character = load_character()
+    history = get_history(user_id, MAX_HISTORY)
+
+    convo = ""
+
+    for role, content in history:
+        convo += f"{role.upper()}: {content}\n"
+
+    prompt = f"""
+{character}
+
+Conversation:
+{convo}
+
+USER: {user_message}
+ASSISTANT:
+"""
+    return prompt
+
+
+def generate_reply(user_id, user_message):
+    prompt = build_prompt(user_id, user_message)
+
+    response = model.generate_content(prompt)
+
+    return response.text.strip()

@@ -1,7 +1,6 @@
 import google.generativeai as genai
 from config import GEMINI_KEY, MAX_HISTORY
 from db import get_history
-import time
 
 genai.configure(api_key=GEMINI_KEY)
 
@@ -40,18 +39,18 @@ def generate_reply(user_id, user_message):
     prompt = build_prompt(user_id, user_message)
 
     try:
-        response = model.generate_content(
-            prompt,
-            request_options={
-                "timeout": 20  # IMPORTANT: prevents hanging
-            }
-        )
+        response = model.generate_content(prompt)
 
-        if not response or not hasattr(response, "text"):
-            return "I couldn't generate a response."
+        # Safety check
+        if not response:
+            return "AI returned empty response."
+
+        if not hasattr(response, "text") or not response.text:
+            return "AI response missing text field."
 
         return response.text.strip()
 
     except Exception as e:
-        print(f"[GEMINI ERROR] {e}")
-        return "AI service is temporarily unavailable."
+        # THIS is the important part now
+        print("GEMINI ERROR:", repr(e))
+        return f"AI service error: {str(e)}"

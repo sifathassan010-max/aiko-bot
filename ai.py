@@ -1,14 +1,16 @@
-from google import genai
+import google.generativeai as genai
 from config import GEMINI_KEY, MAX_HISTORY
 from db import get_history
 
-# Initialize Gemini client
-client = genai.Client(api_key=GEMINI_KEY)
+# Configure Gemini with API key
+genai.configure(api_key=GEMINI_KEY)
+
+# Initialize model
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 
 def load_character():
     try:
-        # FIXED: folder is "prompt" not "prompts"
         with open("prompt/character.txt", "r", encoding="utf-8") as f:
             return f.read()
     except Exception:
@@ -39,11 +41,7 @@ def generate_reply(user_id, user_message):
     try:
         prompt = build_prompt(user_id, user_message)
 
-        # FIXED: removed "models/" prefix — causes API error with google-genai SDK
-        response = client.models.generate_content(
-            model="gemini-1.5-flash-latest",
-            contents=prompt
-        )
+        response = model.generate_content(prompt)
 
         if not response or not response.text:
             return "AI returned empty response."

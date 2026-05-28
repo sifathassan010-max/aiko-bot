@@ -1,17 +1,15 @@
-import google.generativeai as genai
+from google import genai
 from config import GEMINI_KEY, MAX_HISTORY
 from db import get_history
 
-genai.configure(api_key=GEMINI_KEY)
-
-model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
+client = genai.Client(api_key=GEMINI_KEY)
 
 
 def load_character():
     try:
         with open("prompts/character.txt", "r", encoding="utf-8") as f:
             return f.read()
-    except Exception:
+    except:
         return "You are a helpful assistant."
 
 
@@ -23,7 +21,7 @@ def build_prompt(user_id, user_message):
     for role, content in history:
         convo += f"{role.upper()}: {content}\n"
 
-    prompt = f"""
+    return f"""
 {character}
 
 Conversation:
@@ -32,25 +30,19 @@ Conversation:
 USER: {user_message}
 ASSISTANT:
 """
-    return prompt
 
 
 def generate_reply(user_id, user_message):
-    prompt = build_prompt(user_id, user_message)
-
     try:
-        response = model.generate_content(prompt)
+        prompt = build_prompt(user_id, user_message)
 
-        # Safety check
-        if not response:
-            return "AI returned empty response."
-
-        if not hasattr(response, "text") or not response.text:
-            return "AI response missing text field."
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
 
         return response.text.strip()
 
     except Exception as e:
-        # THIS is the important part now
         print("GEMINI ERROR:", repr(e))
-        return f"AI service error: {str(e)}"
+        return "AI service error. Try again later."

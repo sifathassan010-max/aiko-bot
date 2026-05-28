@@ -8,7 +8,8 @@ client = genai.Client(api_key=GEMINI_KEY)
 
 def load_character():
     try:
-        with open("prompts/character.txt", "r", encoding="utf-8") as f:
+        # FIXED: folder is "prompt" not "prompts"
+        with open("prompt/character.txt", "r", encoding="utf-8") as f:
             return f.read()
     except Exception:
         return "You are a helpful assistant."
@@ -38,9 +39,9 @@ def generate_reply(user_id, user_message):
     try:
         prompt = build_prompt(user_id, user_message)
 
-        # IMPORTANT: correct model format for google-genai
+        # FIXED: removed "models/" prefix — causes API error with google-genai SDK
         response = client.models.generate_content(
-            model="models/gemini-1.5-flash-latest",
+            model="gemini-1.5-flash-latest",
             contents=prompt
         )
 

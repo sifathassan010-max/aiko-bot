@@ -45,4 +45,4 @@ def generate_reply(user_id, user_message):
 
     except Exception as e:
         print("GEMINI ERROR:", repr(e))
-        return "AI service error. Try again later."
+        return f"AI service error: {e}"

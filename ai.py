@@ -4,7 +4,7 @@ from db import get_history
 
 genai.configure(api_key=GEMINI_KEY)
 
-model = genai.GenerativeModel("models/gemini-1.5-pro")
+model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
 
 
 def load_character():

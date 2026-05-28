@@ -85,30 +85,30 @@ async def handle_message(message: types.Message):
         await message.answer(reply)
 
     except Exception as e:
-        # IMPORTANT: prevent silent crash loops
         await message.answer("Bot error occurred. Try again later.")
         print(f"[HANDLER ERROR] {e}")
 
 
 # -----------------------
-# STARTUP
+# STARTUP — uses while loop, NOT recursion
 # -----------------------
 async def main():
-    try:
-        # IMPORTANT: avoid webhook conflicts on Railway
-        await bot.delete_webhook(drop_pending_updates=True)
+    while True:
+        try:
+            # Avoid webhook conflicts on Railway
+            await bot.delete_webhook(drop_pending_updates=True)
 
-        # init DB here (NOT at import time)
-        init_db()
+            # Init DB (not at import time)
+            init_db()
 
-        print("Bot started successfully...")
+            print("Bot started successfully...")
 
-        await dp.start_polling(bot)
+            await dp.start_polling(bot)
 
-    except Exception as e:
-        print(f"[FATAL STARTUP ERROR] {e}")
-        await asyncio.sleep(5)
-        await main()  # safe restart loop
+        except Exception as e:
+            print(f"[FATAL STARTUP ERROR] {e}")
+            await asyncio.sleep(5)
+            # Loop continues — safe restart without stack overflow
 
 
 # -----------------------
